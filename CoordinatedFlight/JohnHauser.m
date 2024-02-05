@@ -1,4 +1,4 @@
-function dxdt = JohnHauser(t, x, q, qd, qdd, qddd)
+function [dxdt, V, w_1] = JohnHauser(t, x, q, qd, qdd, qddd)
 % JohnHauser Function for Fixed Wing Coordinated Flight Control Dynamics
     % This function computes the time derivative of the state vector (dxdt)
     % for a flight control system using a given control law. It is designed
