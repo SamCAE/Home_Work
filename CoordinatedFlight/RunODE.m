@@ -1,75 +1,51 @@
+% Clear the workspace, command window, and close all figures
 clear; clc; close all;
 
-% waypoints = [
-%     0 2 10;    % X-coordinates (EAST)
-%     0 5 10;     % Y-coordinates (NORTH)
-%     0 5 5;       % Z-coordinates (UP)
-% ];
-% 
-% % Trajectory settings
-% tf = 10; % Final time of the simulation (seconds)
-% % Time settings
-% dt = 0.01; % Time step
-% time = 0:dt:tf;
-% numWaypoints = size(waypoints,2);  % Number of waypoints
-% numSamples = length(time);
-% % Define the time points for each waypoint
-% timePoints = linspace(0, tf, numWaypoints);
-% 
-% [q,qd,qdd,qddd,pp,tPoints,tSamples] = minjerkpolytraj(waypoints,timePoints,numSamples);
+% Define the final time of the simulation in seconds
+tf = 4*pi; 
 
-% Trajectory settings
-tf = 4*pi; % Final time of the simulation (seconds)
-% Time settings
-dt = 0.01; % Time step
-time = 0:dt:tf;
-numSamples = length(time);
+% Define the desired trajectory as a function of time, t
+% q, qd, qdd, and qddd represent the desired position, velocity, acceleration,
+% and jerk vectors of the trajectory, respectively.
+q = @(t) [210*t; 50*sin(t/2); 50*cos(t/2)]; % Position as a function of time
+qd = @(t) [210; 25*cos(t/2); -25*sin(t/2)]; % Velocity as a function of time
+qdd = @(t) [0; -12.5*sin(t/2); -12.5*cos(t/2)]; % Acceleration as a function of time
+qddd = @(t) [0; -6.25*cos(t/2); 6.25*sin(t/2)]; % Jerk as a function of time
 
-q = [210*time; 50*sin(time/2); 50*cos(time/2)];
-qd = [210*ones(1,numSamples); 25*cos(time/2); -25*sin(time/2)];
-qdd = [0*ones(1,numSamples); -12.5*sin(time/2); -12.5*cos(time/2)];
-qddd = [0*ones(1,numSamples); -6.25*cos(time/2); 6.25*sin(time/2)];
+% Initial conditions for position and velocity
+qi = q(0); % Initial position
+qdi = qd(0); % Initial velocity
 
-[t, x] = ode15s(@(t, x) JohnHauser(t, x, q, qd, qdd, qddd), time,[q(1,1); q(2,1); q(3,1); qd(1,1); qd(2,1); qd(3,1); 1; 1; 1]);
+% Solve the system of differential equations using the ode45 solver
+% The solver calls the JohnHauser function to get the derivatives at each time step
+[t, x] = ode45(@(t, x) JohnHauser(t, x, q(t), qd(t), qdd(t), qddd(t)), [0 tf], [qi(1); qi(2); qi(3); qdi(1); qdi(2); qdi(3); 0; 0; -12.5]);
 
-figure;
-hold on; grid on;
+% Generate a set of 100 evenly spaced time points from 0 to final time for plotting
+tSpan = linspace(0, tf, 100);
 
-% Plot desired trajectory
-plot3(q(1,:), q(2,:), q(3,:), 'b--', 'LineWidth', 2);
+% Compute the desired trajectory at each time point in tSpan
+qDesired = arrayfun(@(t) q(t), tSpan, 'UniformOutput', false);
+qDesiredMat = cell2mat(qDesired)'; % Convert the array of cells to a matrix for easy plotting
 
-% Plot actual trajectory
-plot3(x(:,1), x(:,2), x(:,3), 'r-', 'LineWidth', 2);
+% Extract the actual position trajectory from the solver's output
+xActual = x(:, 1:3);
 
-% Adding labels and legend
-xlabel('X-axis (East)');
-ylabel('Y-axis (North)');
-zlabel('Z-axis (Up)');
-title('Comparison of Desired and Actual Trajectories');
-legend('Desired Trajectory', 'Actual Trajectory');
+% Interpolate the actual trajectory data to match the desired time points for plotting
+% This is necessary because ode45 uses adaptive time-stepping
+xActualInterp = interp1(t, xActual, tSpan);
 
-% Setting axes for better visualization
-axis equal;
+% Plot the desired trajectory in red solid line
+plot3(qDesiredMat(:,1), qDesiredMat(:,2), qDesiredMat(:,3), 'r-', 'LineWidth', 2);
+hold on; % Keep the figure open to overlay the actual trajectory plot
 
-hold off;
+% Plot the actual trajectory in blue dashed line
+plot3(xActualInterp(:,1), xActualInterp(:,2), xActualInterp(:,3), 'b--', 'LineWidth', 2);
 
-% figure;
-% hold on; grid on;
-% 
-% % Plot desired trajectory
-% plot3(qd(1,:), qd(2,:), qd(3,:), 'b--', 'LineWidth', 2);
-% 
-% % Plot actual trajectory
-% plot3(x(:,4), x(:,5), x(:,6), 'r-', 'LineWidth', 2);
-% 
-% % Adding labels and legend
-% xlabel('X-axis (East)');
-% ylabel('Y-axis (North)');
-% zlabel('Z-axis (Up)');
-% title('Comparison of Desired and Actual Trajectories');
-% legend('Desired Trajectory', 'Actual Trajectory');
-% 
-% % Setting axes for better visualization
-% axis equal;
-% 
-% hold off;
+% Add plot decorations
+legend('Desired Trajectory', 'Actual Trajectory'); % Add a legend
+title('Desired vs Actual Trajectory'); % Add a title
+xlabel('X'); % Label the x-axis
+ylabel('Y'); % Label the y-axis
+zlabel('Z'); % Label the z-axis
+grid on; % Enable the grid for better visualization
+hold off; % Close the plotting context
