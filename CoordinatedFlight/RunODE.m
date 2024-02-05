@@ -49,3 +49,28 @@ ylabel('Y'); % Label the y-axis
 zlabel('Z'); % Label the z-axis
 grid on; % Enable the grid for better visualization
 hold off; % Close the plotting context
+
+V = zeros(1, length(t));
+w_1 = zeros(1, length(t));
+for i = 1:length(t)
+    [~, V(i), w_1(i)] = JohnHauser(t(i), x(i,:), q(t(i)), qd(t(i)), qdd(t(i)), qddd(t(i)));
+end
+
+% Plot V against t
+figure; % Create a new figure window
+plot(t, V, 'LineWidth', 2); % Plot V over time
+title('Magnitude of the Velocity Vector (V) over Time'); % Title
+xlabel('Time (s)'); % X-axis label
+ylabel('Velocity Magnitude (m/s)'); % Y-axis label
+grid on; % Enable grid for better visualization
+
+% Plot w_1 against t in a new figure
+figure; % Create another new figure window
+plot(t, w_1, 'LineWidth', 2); % Plot w_1 over time
+title('Control Parameter (w_1) over Time'); % Title
+xlabel('Time (s)'); % X-axis label
+ylabel('w_1 (rad/s)'); % Y-axis label
+grid on; % Enable grid for better visualization
+
+
+
