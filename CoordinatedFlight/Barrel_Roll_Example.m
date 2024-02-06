@@ -8,10 +8,10 @@ time = 0:dt:tf;
 numSamples = length(time);
 
 % Initial conditions
-x = [0; 0; 0]; % Initial position
-X = [0.1; 0.1; 0.1; 0; 0; 0]; % Initial state vector [Vx; Vy; Vz; zeta; gamma; mu]
-dX = [0; 0; 0; 0; 0; 0]; % Initial state derivatives
-a_w = [0.1; 0.1]; % Initial wind acceleration
+x = [0; 0; 50]; % Initial position
+X = [210; 25; 0; 0; 0; 0]; % Initial state vector [Vx; Vy; Vz; zeta; gamma; mu]
+dX = [0; 0; -12.5; 0; 0; 0]; % Initial state derivatives
+a_w = [0; -12.5]; % Initial wind acceleration
 
 % Initialize arrays for storing simulation data
 X_data = zeros(6, numSamples);
@@ -20,6 +20,7 @@ q = zeros(3, numSamples);
 qd = zeros(3, numSamples);
 qdd = zeros(3, numSamples);
 qddd = zeros(3, numSamples);
+U2_data = zeros(1, numSamples); % Initialize array for storing U2 data
 
 for i = 1:numSamples
     % Call the controller
@@ -48,10 +49,12 @@ for i = 1:numSamples
     % Store data for plotting
     X_data(:, i) = X;
     x_data(:, i) = x;
+    U2_data(i) = U2; % Store U2 value
 end
 
 % Plotting the trajectories
 figure;
+subplot(2,1,1); % Plot trajectories in the first subplot
 hold on; grid on;
 
 % Plot desired trajectory
@@ -69,6 +72,12 @@ legend('Desired Trajectory', 'Actual Trajectory');
 
 % Setting axes for better visualization
 axis equal;
-
 hold off;
 
+subplot(2,1,2); % Plot U2 in the second subplot
+plot(time, U2_data, 'g-', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('U2');
+title('Control Input U2 Over Time');
+grid on;
+xlim([0 4*pi]);

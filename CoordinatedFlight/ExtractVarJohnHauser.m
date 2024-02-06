@@ -1,4 +1,4 @@
-function dxdt = JohnHauser(t, x, q, qd, qdd, qddd)
+function [dxdt, V, w_1] = ExtractVarJohnHauser(t, x, q, qd, qdd, qddd)
 % JohnHauser Function for Fixed Wing Coordinated Flight Control Dynamics
     % This function computes the time derivative of the state vector (dxdt)
     % for a flight control system using a given control law. It is designed
@@ -43,11 +43,6 @@ function dxdt = JohnHauser(t, x, q, qd, qdd, qddd)
     % Gravity vector in the Earth frame
     g = [0; 0; 9.81];
 
-    % Controller gains for proportional, derivative, and second derivative control
-    K0 = 10; % Proportional gain
-    K1 = 10; % Derivative gain
-    K2 = 10; % Second derivative gain
-
     % Assign the derivative of the position states directly from the velocity states
     dxdt(1:3) = x(4:6);
 
@@ -79,14 +74,9 @@ function dxdt = JohnHauser(t, x, q, qd, qdd, qddd)
     % Wind frame angular velocities required for control
     w_2 = -(x(9) + g_w(3))/V;
     w_3 = g_w(2)/V;
-
-    % Compute tracking errors for position, velocity, and acceleration
-    error = q - x(1:3); % Position error
-    errord = qd - x(4:6); % Velocity error
-    errordd = qdd - dxdt(4:6); % Acceleration error
     
     % Control law based on differential flatness
-    u = qddd + K2 * errordd + K1 * errord + K0 * error;
+    u = qddd;
 
     % Compute the right-hand side of the control equation
     first_vector = [-w_2 * x(9); 
