@@ -64,13 +64,13 @@ rho = 1.225; % Air density [kg/m^3]
 S = 27.87; % Wing area [m²]
 m = 92e3/9.81; % Aircraft mass [kg]
 b = 9.144; % Span [m]
-e = 0.7;
-AR = b^2/S;
-CD0 = 0.02;
-Cl0 = 0.1;
-Cla = 5.73;
-a_L0 = 0.3;
-k = 1/(pi*e*AR);
+e = 0.7; % Oswald efficiency factor
+AR = b^2/S; % Aspect ratio of the wing
+CD0 = 0.02; % Zero-lift drag coefficient
+Cl0 = 0.1; % Lift coefficient at zero angle of attack
+Cla = 5.73; % Lift curve slope
+a_L0 = 0.3; % Offset value for lift calculation
+k = 1/(pi*e*AR); % Induced drag factor
 
 % Your equation definitions
 Cl = Cla*alpha + Cl0;
